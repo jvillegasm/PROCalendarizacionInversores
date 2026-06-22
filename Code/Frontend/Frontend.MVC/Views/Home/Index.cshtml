@@ -1,0 +1,1052 @@
+﻿@{
+    ViewData["Title"] = "Sistema de Calendarización de Inversores";
+    ViewBag.CatalogoUrl = ViewBag.CatalogoUrl ?? "https://localhost:5001";
+    ViewBag.AgendasUrl = ViewBag.AgendasUrl ?? "https://localhost:5002";
+}
+
+<!-- ═══════════════ PÁGINA: INICIO ═══════════════ -->
+<div id="page-inicio" class="page active">
+    <div class="py-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Sistema de Calendarización de Inversores</h1>
+                <p class="text-muted mb-0">PROCOMER — Gestione inversores, participantes y agendas de visita.</p>
+            </div>
+            <button class="btn btn-brand min-touch px-4" onclick="go('agenda')">
+                <i class="bi bi-magic me-1"></i>Generar Agenda
+            </button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="card p-3 stat-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon"><i class="bi bi-person-badge fs-5 text-brand"></i></div>
+                        <div>
+                            <div class="fw-bold fs-4" id="stat-inversores">@(ViewBag.TotalInversores ?? 0)</div>
+                            <div class="small text-muted">Inversores</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card p-3 stat-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon"><i class="bi bi-people fs-5 text-brand"></i></div>
+                        <div>
+                            <div class="fw-bold fs-4" id="stat-participantes">@(ViewBag.TotalParticipantes ?? 0)</div>
+                            <div class="small text-muted">Participantes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card p-3 stat-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon"><i class="bi bi-building fs-5 text-brand"></i></div>
+                        <div>
+                            <div class="fw-bold fs-4" id="stat-oficinas">@(ViewBag.TotalOficinas ?? 0)</div>
+                            <div class="small text-muted">Oficinas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card p-3 stat-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon"><i class="bi bi-calendar2-check fs-5 text-brand"></i></div>
+                        <div>
+                            <div class="fw-bold fs-4" id="stat-agendas">@(ViewBag.TotalAgendas ?? 0)</div>
+                            <div class="small text-muted">Agendas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas de pasos -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card p-4 h-100">
+                    <h5 class="fw-bold mb-3"><span class="badge bg-brand me-2">Paso 1</span>Gestión de Personal, Inversoresy Ubicaciones</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item px-0"><a href="#" onclick="go('inversores')" class="text-decoration-none text-brand"><i class="bi bi-arrow-right-circle me-2"></i>Gestionar Inversores</a></li>
+                        <li class="list-group-item px-0"><a href="#" onclick="go('participantes')" class="text-decoration-none text-brand"><i class="bi bi-arrow-right-circle me-2"></i>Gestionar Participantes</a></li>
+                        <li class="list-group-item px-0"><a href="#" onclick="go('participantes')" class="text-decoration-none text-brand"><i class="bi bi-arrow-right-circle me-2"></i>Registrar Oficinas y Matriz de traslados</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4 h-100">
+                    <h5 class="fw-bold mb-3"><span class="badge bg-brand me-2">Paso 2</span>Generar y Consultar Agendas</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item px-0"><a href="#" onclick="go('agenda')" class="text-decoration-none text-brand"><i class="bi bi-arrow-right-circle me-2"></i>Generar nueva agenda automática</a></li>
+                        <li class="list-group-item px-0"><a href="#" onclick="go('agendas')" class="text-decoration-none text-brand"><i class="bi bi-arrow-right-circle me-2"></i>Consultar agendas existentes</a></li>
+                        <li class="list-group-item px-0"><span class="text-muted"><i class="bi bi-file-pdf me-2 text-brand"></i>Descargar PDF del itinerario</span></li>
+                    </ul>
+                    <button class="btn btn-brand w-100 mt-auto" onclick="go('agenda')"><i class="bi bi-magic me-1"></i>Empezar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ PÁGINA: INVERSORES ═══════════════ -->
+<div id="page-inversores" class="page">
+    <div class="py-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 class="h4 fw-bold mb-0">Inversores</h2>
+            <button class="btn btn-brand min-touch" onclick="abrirModalInversor()">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Inversor
+            </button>
+        </div>
+        <div class="card p-3">
+            <div class="mb-3">
+                <input type="text" id="buscarInversor" class="form-control" placeholder="Buscar inversor…" oninput="filtrarTabla('tablaInversores',this.value)">
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle" id="tablaInversores">
+                    <thead><tr><th>Nombre</th><th>Empresa</th><th>País</th><th>Idiomas</th><th>Visita</th><th>Acciones</th></tr></thead>
+                    <tbody id="bodyInversores">
+                        <tr><td colspan="6"><div class="empty-state"><i class="bi bi-person-badge"></i>Cargando inversores…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Inversor -->
+<div class="modal fade" id="modalInversor" tabindex="-1" aria-labelledby="modalInversorLabel">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-brand text-white">
+                <h5 class="modal-title" id="modalInversorLabel">Inversor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formInversor" class="needs-validation" novalidate>
+                    <input type="hidden" id="inversorId">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label fw-semibold">Nombre completo *</label>
+                            <input type="text" class="form-control" id="invNombre" required maxlength="200">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Empresa *</label>
+                            <input type="text" class="form-control" id="invEmpresa" required maxlength="200">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">País de origen *</label>
+                            <input type="text" class="form-control" id="invPais" required maxlength="100">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Lugar de hospedaje *</label>
+                            <input type="text" class="form-control" id="invHospedaje" required maxlength="300">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Fecha inicio visita *</label>
+                            <input type="date" class="form-control" id="invFechaInicio" required>
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Fecha cierre visita *</label>
+                            <input type="date" class="form-control" id="invFechaFin" required>
+                            <div class="invalid-feedback">RN-02: debe ser ≥ a la fecha de inicio.</div></div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Idiomas * <small class="text-muted">(RN-01: al menos uno)</small></label>
+                            <div id="idiomasCheckContainer" class="d-flex flex-wrap gap-2"></div>
+                            <div class="text-danger small mt-1" id="idiomasError" style="display:none">Debe seleccionar al menos un idioma.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-brand" onclick="guardarInversor()"><i class="bi bi-save me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalEliminarMsg">¿Está seguro de eliminar este registro?</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ PÁGINA: PARTICIPANTES ═══════════════ -->
+<div id="page-participantes" class="page">
+    <div class="py-3">
+        <h2 class="h4 fw-bold mb-3">Gestión de Personal y Ubicaciones</h2>
+        <ul class="nav nav-pills mb-3" id="pillsParticipantes">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="pill" href="#tabParticipantes">Participantes</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tabOficinas">Oficinas</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#tabTraslados">Matriz de traslados</a></li>
+        </ul>
+        <div class="tab-content">
+            <!-- Tab Participantes -->
+            <div class="tab-pane fade show active" id="tabParticipantes">
+                <div class="d-flex justify-content-between mb-3">
+                    <input type="text" class="form-control w-50" placeholder="Buscar…" oninput="filtrarTabla('tablaParticipantes',this.value)">
+                    <button class="btn btn-brand min-touch" onclick="abrirModalParticipante()"><i class="bi bi-plus-lg me-1"></i>Nuevo Participante</button>
+                </div>
+                <div class="card p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle" id="tablaParticipantes">
+                            <thead><tr><th>Nombre</th><th>Cargo</th><th>Oficina</th><th>Idiomas</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="bodyParticipantes"><tr><td colspan="6"><div class="empty-state"><i class="bi bi-people"></i>Cargando…</div></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab Oficinas -->
+            <div class="tab-pane fade" id="tabOficinas">
+                <div class="d-flex justify-content-between mb-3">
+                    <input type="text" class="form-control w-50" placeholder="Buscar…" oninput="filtrarTabla('tablaOficinas',this.value)">
+                    <button class="btn btn-brand min-touch" onclick="abrirModalOficina()"><i class="bi bi-plus-lg me-1"></i>Nueva Oficina</button>
+                </div>
+                <div class="card p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle" id="tablaOficinas">
+                            <thead><tr><th>Nombre</th><th>Dirección</th><th>Part. Activos</th><th>Acciones</th></tr></thead>
+                            <tbody id="bodyOficinas"><tr><td colspan="4"><div class="empty-state"><i class="bi bi-building"></i>Cargando…</div></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab Matriz de traslados -->
+            <div class="tab-pane fade" id="tabTraslados">
+                <div class="alert alert-info small mb-3"><i class="bi bi-info-circle me-1"></i><strong>RN-07:</strong> Al registrar un traslado A→B, el sistema crea automáticamente B→A con el mismo tiempo.</div>
+                <div class="d-flex gap-2 mb-3 flex-wrap">
+                    <select class="form-select w-auto" id="trasOrigen"></select>
+                    <select class="form-select w-auto" id="trasDestino"></select>
+                    <input type="number" class="form-control w-auto" id="trasMinutos" placeholder="Minutos" min="1">
+                    <button class="btn btn-brand min-touch" onclick="agregarTraslado()"><i class="bi bi-plus-lg me-1"></i>Agregar</button>
+                </div>
+                <div class="card p-3">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle" id="tablaTraslados">
+                            <thead><tr><th>Origen</th><th>Destino</th><th>Minutos</th><th>Acciones</th></tr></thead>
+                            <tbody id="bodyTraslados"><tr><td colspan="4"><div class="empty-state"><i class="bi bi-map"></i>Cargando…</div></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Participante -->
+<div class="modal fade" id="modalParticipante" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-brand text-white">
+                <h5 class="modal-title">Participante</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formParticipante" class="needs-validation" novalidate>
+                    <input type="hidden" id="participanteId">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label fw-semibold">Nombre completo *</label>
+                            <input type="text" class="form-control" id="parNombre" required maxlength="200">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Cargo / Institución *</label>
+                            <input type="text" class="form-control" id="parCargo" required maxlength="200">
+                            <div class="invalid-feedback">Requerido.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Oficina * <small class="text-muted">(RN-05)</small></label>
+                            <select class="form-select" id="parOficina" required>
+                                <option value="">Seleccionar…</option>
+                            </select>
+                            <div class="invalid-feedback">RN-05: seleccione una oficina.</div></div>
+                        <div class="col-md-6"><label class="form-label fw-semibold">Estado</label>
+                            <select class="form-select" id="parActivo">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select></div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Idiomas * <small class="text-muted">(RN-04: al menos uno)</small></label>
+                            <div id="idiomasParContainer" class="d-flex flex-wrap gap-2"></div>
+                            <div class="text-danger small mt-1" id="idiomasParError" style="display:none">RN-04: debe tener al menos un idioma.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Disponibilidad horaria por fecha</label>
+                            <div id="bloquesDisponibilidad"></div>
+                            <button type="button" class="btn btn-outline-brand btn-sm mt-2" onclick="agregarBloque()"><i class="bi bi-plus me-1"></i>Agregar bloque</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-brand" onclick="guardarParticipante()"><i class="bi bi-save me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Oficina (nueva / editar) -->
+<div class="modal fade" id="modalOficina" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-brand text-white">
+                <h5 class="modal-title" id="modalOficinaTitulo">Oficina</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formOficina" class="needs-validation" novalidate>
+                    <input type="hidden" id="oficinaId">
+                    <div class="mb-3"><label class="form-label fw-semibold">Nombre *</label>
+                        <input type="text" class="form-control" id="ofNombre" required maxlength="200">
+                        <div class="invalid-feedback">Requerido.</div></div>
+                    <div class="mb-3"><label class="form-label fw-semibold">Dirección física *</label>
+                        <input type="text" class="form-control" id="ofDireccion" required maxlength="400">
+                        <div class="invalid-feedback">Requerido.</div></div>
+                    <div class="mb-3"><label class="form-label fw-semibold">Coordenadas <small class="text-muted">(opcional)</small></label>
+                        <input type="text" class="form-control" id="ofCoordenadas" placeholder="9.9355,-84.0838" maxlength="100"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-brand" onclick="guardarOficina()"><i class="bi bi-save me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar Traslado -->
+<div class="modal fade" id="modalTraslado" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-brand text-white">
+                <h5 class="modal-title">Editar traslado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="trasladoId">
+                <div class="mb-2 text-muted small" id="trasladoDescripcion"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tiempo (minutos) *</label>
+                    <input type="number" class="form-control" id="trasladoMinutos" min="1" required>
+                    <div class="form-text">Actualiza también el par simétrico automáticamente.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-brand" onclick="guardarTraslado()"><i class="bi bi-save me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ PÁGINA: GENERAR AGENDA ═══════════════ -->
+<div id="page-agenda" class="page">
+    <div class="py-3">
+        <h2 class="h4 fw-bold mb-3">Generar Agenda Automática</h2>
+        <div class="row g-4">
+            <!-- Formulario col-lg-5 -->
+            <div class="col-lg-5">
+                <div class="card p-4">
+                    <form id="formGenerarAgenda" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Inversor *</label>
+                            <select class="form-select" id="agInversor" required onchange="cargarPanelInversor(this.value)">
+                                <option value="">Seleccione un inversor para continuar…</option>
+                            </select>
+                            <div class="invalid-feedback">Seleccione un inversor.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Candidatos *</label>
+                            <div id="candidatosContainer" class="border rounded p-2" style="max-height:160px;overflow-y:auto">
+                                <div class="text-muted small">Seleccione un inversor primero.</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Fecha de la agenda * <small class="text-muted">(RN-08)</small></label>
+                            <input type="date" class="form-control" id="agFecha" required>
+                            <div class="invalid-feedback">RN-08: la fecha debe estar dentro del período de visita.</div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col">
+                                <label class="form-label fw-semibold">Duración (min) *</label>
+                                <input type="number" class="form-control" id="agDuracion" value="60" min="15" max="120" required>
+                            </div>
+                            <div class="col">
+                                <label class="form-label fw-semibold">Meta reuniones *</label>
+                                <input type="number" class="form-control" id="agMeta" value="4" min="1" max="10" required>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-brand w-100 min-touch" id="btnGenerar" onclick="generarAgenda()">
+                            <i class="bi bi-magic me-1"></i>Generar agenda
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Panel inversor + resultado col-lg-7 -->
+            <div class="col-lg-7">
+                <!-- Panel dinámico del inversor -->
+                <div class="card p-4 mb-3" id="panelInversor">
+                    <div class="empty-state"><i class="bi bi-person-badge"></i>Seleccione un inversor para ver sus datos.</div>
+                </div>
+                <!-- Área de resultado -->
+                <div id="resultadoAgenda"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ PÁGINA: AGENDAS ═══════════════ -->
+<div id="page-agendas" class="page">
+    <div class="py-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 class="h4 fw-bold mb-0">Agendas</h2>
+            <button class="btn btn-brand min-touch" onclick="go('agenda')"><i class="bi bi-magic me-1"></i>Nueva Agenda</button>
+        </div>
+        <!-- Filtros -->
+        <div class="card p-3 mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold">Inversor</label>
+                    <select class="form-select form-select-sm" id="filtroInversor"><option value="">Todos</option></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Fecha</label>
+                    <input type="date" class="form-control form-control-sm" id="filtroFecha">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Estado</label>
+                    <select class="form-select form-select-sm" id="filtroEstado">
+                        <option value="">Todos</option>
+                        <option value="Activa">Activa</option>
+                        <option value="Anulada">Anulada</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-brand btn-sm w-100" onclick="cargarAgendas()"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead><tr><th>ID</th><th>Inversor</th><th>Fecha</th><th>Reuniones</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody id="bodyAgendas"><tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar2"></i>Cargando agendas…</div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offcanvas detalle de agenda -->
+<div class="offcanvas offcanvas-end" style="width:480px" tabindex="-1" id="offcanvasAgenda">
+    <div class="offcanvas-header bg-brand text-white">
+        <h5 class="offcanvas-title">Detalle de Agenda</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body" id="offcanvasAgendaBody">
+        <div class="skeleton mb-2"></div><div class="skeleton mb-2 w-75"></div><div class="skeleton w-50"></div>
+    </div>
+</div>
+
+<!-- Modal Anular Agenda -->
+<div class="modal fade" id="modalAnular" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Anular Agenda</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">¿Confirma la anulación lógica de esta agenda? El registro y su PDF se conservarán (RN-15).</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-warning" id="btnConfirmarAnular">Anular</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+/* ════════════════════════════════════════════════════════
+   Módulo: Inversores
+════════════════════════════════════════════════════════ */
+let _idiomas = [];
+let _inversores = [];
+
+async function load_inversores() {
+    await cargarIdiomas();
+    await cargarInversores();
+}
+
+async function cargarIdiomas() {
+    const res = await fetch(`${CATALOGO_URL}/api/idiomas`);
+    if (res.ok) _idiomas = await res.json();
+}
+
+async function cargarInversores() {
+    const res = await fetch(`${CATALOGO_URL}/api/inversores`);
+    if (!res.ok) { $('#bodyInversores').html('<tr><td colspan="6"><div class="empty-state"><i class="bi bi-exclamation-triangle"></i>Error cargando inversores.</div></td></tr>'); return; }
+    _inversores = await res.json();
+    renderTablaInversores(_inversores);
+    // Actualizar stat
+    $('#stat-inversores').text(_inversores.length);
+    // Actualizar select de agendas
+    const sel = $('#filtroInversor');
+    sel.find('option:not(:first)').remove();
+    _inversores.forEach(i => sel.append(`<option value="${i.id}">${i.nombreCompleto}</option>`));
+    // Cargar en generar agenda también
+    const agSel = $('#agInversor');
+    agSel.find('option:not(:first)').remove();
+    _inversores.forEach(i => agSel.append(`<option value="${i.id}">${i.nombreCompleto} — ${i.empresa}</option>`));
+}
+
+function renderTablaInversores(lista) {
+    const tbody = $('#bodyInversores');
+    if (!lista.length) {
+        tbody.html('<tr><td colspan="6"><div class="empty-state"><i class="bi bi-person-badge"></i>No hay inversores que coincidan.</div></td></tr>');
+        return;
+    }
+    tbody.html(lista.map(i => `
+        <tr>
+            <td>${i.nombreCompleto}</td>
+            <td>${i.empresa}</td>
+            <td>${i.paisOrigen}</td>
+            <td>${(i.idiomas||[]).map(l=>`<span class="badge bg-secondary lang-chip">${l.nombre}</span>`).join(' ')}</td>
+            <td><small>${fmt(i.fechaInicioVisita)} – ${fmt(i.fechaFinVisita)}</small></td>
+            <td>
+                <button class="btn btn-sm btn-outline-brand min-touch me-1" onclick="editarInversor('${i.id}')"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn btn-sm btn-outline-danger min-touch" onclick="setEliminar('inversor','${i.id}','${i.nombreCompleto}')"><i class="bi bi-trash-fill"></i></button>
+            </td>
+        </tr>`).join(''));
+}
+
+function limpiarFormInversor() {
+    const form = $('#formInversor')[0];
+    form.reset();
+    $('#formInversor').removeClass('was-validated');
+    $('#invFechaFin')[0].setCustomValidity('');
+    $('#idiomasError').hide();
+}
+
+function abrirModalInversor() {
+    $('#inversorId').val('');
+    limpiarFormInversor();
+    // Renderizar checkboxes de idiomas
+    const cont = $('#idiomasCheckContainer').html('');
+    _idiomas.forEach(l => cont.append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="${l.id}" id="chk-${l.id}"><label class="form-check-label" for="chk-${l.id}">${l.nombre}</label></div>`));
+    new bootstrap.Modal('#modalInversor').show();
+}
+
+async function editarInversor(id) {
+    limpiarFormInversor();
+    const res = await fetch(`${CATALOGO_URL}/api/inversores/${id}`);
+    const inv = await res.json();
+    $('#inversorId').val(inv.id);
+    $('#invNombre').val(inv.nombreCompleto);
+    $('#invEmpresa').val(inv.empresa);
+    $('#invPais').val(inv.paisOrigen);
+    $('#invHospedaje').val(inv.lugarHospedaje);
+    $('#invFechaInicio').val(inv.fechaInicioVisita.substring(0,10));
+    $('#invFechaFin').val(inv.fechaFinVisita.substring(0,10));
+    const cont = $('#idiomasCheckContainer').html('');
+    const selIds = (inv.idiomas||[]).map(l=>l.id);
+    _idiomas.forEach(l => cont.append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="${l.id}" id="chk-${l.id}" ${selIds.includes(l.id)?'checked':''}><label class="form-check-label" for="chk-${l.id}">${l.nombre}</label></div>`));
+    new bootstrap.Modal('#modalInversor').show();
+}
+
+async function guardarInversor() {
+    const form = $('#formInversor')[0];
+    const ids = [...$('#idiomasCheckContainer input:checked')].map(c=>c.value);
+    if (!ids.length) { $('#idiomasError').show(); return; }
+    $('#idiomasError').hide();
+    // Limpiar validación de fechas antes de re-evaluar (evita que setCustomValidity previo
+    // bloquee checkValidity aunque el usuario ya haya corregido las fechas)
+    $('#invFechaFin')[0].setCustomValidity('');
+    form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
+    // RN-02: la fecha de fin no puede ser anterior a la de inicio
+    const inicio = new Date($('#invFechaInicio').val());
+    const fin = new Date($('#invFechaFin').val());
+    if (fin < inicio) {
+        $('#invFechaFin')[0].setCustomValidity('La fecha de fin no puede ser anterior a la de inicio');
+        $('#invFechaFin')[0].reportValidity();
+        return;
+    }
+    const payload = { nombreCompleto: $('#invNombre').val(), empresa: $('#invEmpresa').val(), paisOrigen: $('#invPais').val(), fechaInicioVisita: $('#invFechaInicio').val(), fechaFinVisita: $('#invFechaFin').val(), lugarHospedaje: $('#invHospedaje').val(), idiomaIds: ids };
+    const id = $('#inversorId').val();
+
+    // Bug fix #1: envolver el fetch en try-catch para errores de red / CORS / certificado
+    let res;
+    try {
+        res = id
+            ? await fetch(`${CATALOGO_URL}/api/inversores/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+            : await fetch(`${CATALOGO_URL}/api/inversores`,         {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    } catch (networkErr) {
+        console.error('[guardarInversor] Error de red:', networkErr);
+        showToast('No se pudo conectar con el servidor. Verifique que el servicio esté disponible.', 'error');
+        return;
+    }
+
+    if (res.ok) {
+        // Bug fix #2: optional chaining en getInstance para evitar TypeError si la instancia fue destruida
+        bootstrap.Modal.getInstance('#modalInversor')?.hide();
+        showToast(id ? 'Inversor actualizado.' : 'Inversor registrado.', 'success');
+        // Bug fix #3: try-catch en cargarInversores para que un fallo del GET no oculte
+        // que el guardado SÍ fue exitoso (el dato está en BD aunque la tabla no refresque)
+        try {
+            await cargarInversores();
+        } catch (refreshErr) {
+            console.error('[guardarInversor] Error al refrescar tabla:', refreshErr);
+            showToast('Guardado exitoso. Si no ves el cambio, recarga la página.', 'warning');
+        }
+    } else {
+        const err = await res.json().catch(()=>({title:'Error desconocido'}));
+        showToast(err.title || 'Error al guardar.', 'error');
+    }
+}
+
+function setEliminar(tipo, id, nombre) {
+    $('#modalEliminarMsg').text(`¿Eliminar "${nombre}"?`);
+    $('#btnConfirmarEliminar').off('click').on('click', async () => {
+        const url = tipo === 'inversor'    ? `${CATALOGO_URL}/api/inversores/${id}`
+                  : tipo === 'participante' ? `${CATALOGO_URL}/api/participantes/${id}`
+                  : tipo === 'traslado'     ? `${CATALOGO_URL}/api/traslados/${id}`
+                  :                          `${CATALOGO_URL}/api/oficinas/${id}`;
+        let res;
+        try { res = await fetch(url, {method:'DELETE'}); }
+        catch { bootstrap.Modal.getInstance('#modalEliminar')?.hide(); showToast('Error de conexión.', 'error'); return; }
+        bootstrap.Modal.getInstance('#modalEliminar')?.hide();
+        if (res.ok) {
+            showToast('Registro eliminado.', 'success');
+            try {
+                if (tipo === 'inversor')          await cargarInversores();
+                else if (tipo === 'participante') await cargarParticipantes();
+                else if (tipo === 'traslado')     await cargarTraslados();
+                else                              await cargarOficinas();
+            } catch { showToast('Eliminado. Si no ves el cambio, recarga la página.', 'warning'); }
+        } else {
+            const err = await res.json().catch(()=>({title:'Operación bloqueada por restricciones de negocio.'}));
+            showToast(err.title, 'error');
+        }
+    });
+    new bootstrap.Modal('#modalEliminar').show();
+}
+
+/* ════════════════════════════════════════════════════════
+   Módulo: Participantes, Oficinas, Matriz de traslados
+════════════════════════════════════════════════════════ */
+let _oficinas = [];
+let _participantes = [];
+
+async function load_participantes() {
+    await Promise.all([cargarIdiomas(), cargarOficinas()]);
+    await cargarParticipantes();
+    await cargarTraslados();
+}
+
+async function cargarParticipantes() {
+    const res = await fetch(`${CATALOGO_URL}/api/participantes`);
+    if (!res.ok) return;
+    _participantes = await res.json();
+    $('#stat-participantes').text(_participantes.length);
+    const tbody = $('#bodyParticipantes');
+    if (!_participantes.length) { tbody.html('<tr><td colspan="6"><div class="empty-state"><i class="bi bi-people"></i>No hay participantes.</div></td></tr>'); return; }
+    tbody.html(_participantes.map(p => `
+        <tr>
+            <td>${p.nombreCompleto}</td><td>${p.cargo}</td><td>${p.oficinaNombre||''}</td>
+            <td>${(p.idiomas||[]).map(l=>`<span class="badge bg-secondary lang-chip">${l.nombre}</span>`).join(' ')}</td>
+            <td><span class="badge ${p.activo?'bg-success-subtle text-success':'bg-secondary-subtle text-secondary'}">${p.activo?'Activo':'Inactivo'}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-brand min-touch me-1" onclick="editarParticipante('${p.id}')"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn btn-sm btn-outline-danger min-touch" onclick="setEliminar('participante','${p.id}','${p.nombreCompleto}')"><i class="bi bi-trash-fill"></i></button>
+            </td>
+        </tr>`).join(''));
+}
+
+async function cargarOficinas() {
+    const res = await fetch(`${CATALOGO_URL}/api/oficinas`);
+    if (!res.ok) return;
+    _oficinas = await res.json();
+    $('#stat-oficinas').text(_oficinas.length);
+    // Fills selects
+    ['parOficina','trasOrigen','trasDestino'].forEach(id => {
+        const sel = $(`#${id}`);
+        sel.find('option:not(:first)').remove();
+        _oficinas.forEach(o => sel.append(`<option value="${o.id}">${o.nombre}</option>`));
+    });
+    // Tabla
+    const tbody = $('#bodyOficinas');
+    if (!_oficinas.length) { tbody.html('<tr><td colspan="4"><div class="empty-state"><i class="bi bi-building"></i>No hay oficinas.</div></td></tr>'); return; }
+    const actCount = {};
+    _participantes.forEach(p => { actCount[p.oficinaId] = (actCount[p.oficinaId]||0) + (p.activo?1:0); });
+    tbody.html(_oficinas.map(o => {
+        const n = actCount[o.id]||0;
+        return `<tr><td>${o.nombre}</td><td>${o.direccionFisica}</td><td>${n}</td>
+            <td class="text-nowrap">
+                <button class="btn btn-sm btn-outline-brand min-touch me-1" onclick="editarOficina('${o.id}')"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn btn-sm btn-outline-danger min-touch" ${n>0?'disabled title="RN-06: tiene participantes activos"':''} onclick="setEliminar('oficina','${o.id}','${o.nombre}')"><i class="bi bi-trash-fill"></i></button>
+            </td></tr>`;
+    }).join(''));
+}
+
+async function cargarTraslados() {
+    const res = await fetch(`${CATALOGO_URL}/api/traslados`);
+    if (!res.ok) return;
+    const lista = await res.json();
+    const tbody = $('#bodyTraslados');
+    if (!lista.length) { tbody.html('<tr><td colspan="4"><div class="empty-state"><i class="bi bi-map"></i>Sin traslados registrados.</div></td></tr>'); return; }
+    tbody.html(lista.map(t=>`<tr>
+        <td>${t.oficinaNombreOrigen||t.oficinaOrigenNombre||''}</td>
+        <td>${t.oficinaNombreDestino||t.oficinaDestinoNombre||''}</td>
+        <td>${t.tiempoMinutos} min</td>
+        <td class="text-nowrap">
+            <button class="btn btn-sm btn-outline-brand min-touch me-1" onclick="editarTraslado('${t.id}','${(t.oficinaNombreOrigen||t.oficinaOrigenNombre||'')}','${(t.oficinaNombreDestino||t.oficinaDestinoNombre||'')}',${t.tiempoMinutos})"><i class="bi bi-pencil-fill"></i></button>
+            <button class="btn btn-sm btn-outline-danger min-touch" onclick="setEliminar('traslado','${t.id}','${(t.oficinaNombreOrigen||t.oficinaOrigenNombre||'')} \u2192 ${(t.oficinaNombreDestino||t.oficinaDestinoNombre||'')}')"><i class="bi bi-trash-fill"></i></button>
+        </td></tr>`).join(''));
+}
+
+function abrirModalParticipante() {
+    $('#participanteId').val(''); $('#formParticipante')[0].reset(); $('#formParticipante').removeClass('was-validated');
+    renderIdiomasParCheckboxes([]);
+    $('#bloquesDisponibilidad').html('');
+    new bootstrap.Modal('#modalParticipante').show();
+}
+
+function renderIdiomasParCheckboxes(selIds) {
+    const cont = $('#idiomasParContainer').html('');
+    _idiomas.forEach(l => cont.append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="${l.id}" id="chkP-${l.id}" ${selIds.includes(l.id)?'checked':''}><label class="form-check-label" for="chkP-${l.id}">${l.nombre}</label></div>`));
+}
+
+async function editarParticipante(id) {
+    const res = await fetch(`${CATALOGO_URL}/api/participantes/${id}`);
+    const p = await res.json();
+    $('#participanteId').val(p.id); $('#parNombre').val(p.nombreCompleto); $('#parCargo').val(p.cargo);
+    $('#parOficina').val(p.oficinaId); $('#parActivo').val(p.activo.toString());
+    renderIdiomasParCheckboxes((p.idiomas||[]).map(l=>l.id));
+    // Renderizar disponibilidades
+    const cont = $('#bloquesDisponibilidad').html('');
+    (p.disponibilidades||[]).forEach(d => agregarBloqueCon(d.fecha.substring(0,10), d.horaInicio.substring(0,5), d.horaFin.substring(0,5)));
+    new bootstrap.Modal('#modalParticipante').show();
+}
+
+function agregarBloque() { agregarBloqueCon('','',''); }
+function agregarBloqueCon(fecha,ini,fin) {
+    const id = Date.now();
+    $('#bloquesDisponibilidad').append(`<div class="row g-2 mb-2 bloque-item" id="bloque-${id}">
+        <div class="col-md-4"><input type="date" class="form-control form-control-sm blk-fecha" value="${fecha}" required></div>
+        <div class="col-md-3"><input type="time" class="form-control form-control-sm blk-ini" value="${ini}" required></div>
+        <div class="col-md-3"><input type="time" class="form-control form-control-sm blk-fin" value="${fin}" required></div>
+        <div class="col-md-2"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="$('#bloque-${id}').remove()"><i class="bi bi-x-lg"></i></button></div>
+    </div>`);
+}
+
+async function guardarParticipante() {
+    const ids = [...$('#idiomasParContainer input:checked')].map(c=>c.value);
+    if (!ids.length) { $('#idiomasParError').show(); return; } $('#idiomasParError').hide();
+    const form = $('#formParticipante')[0]; form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
+    const disponibilidades = [...$('#bloquesDisponibilidad .bloque-item')].map(b => ({
+        fecha: $(b).find('.blk-fecha').val(), horaInicio: $(b).find('.blk-ini').val()+':00', horaFin: $(b).find('.blk-fin').val()+':00'
+    }));
+    const payload = { nombreCompleto: $('#parNombre').val(), cargo: $('#parCargo').val(), oficinaId: $('#parOficina').val(), activo: $('#parActivo').val() === 'true', idiomaIds: ids, disponibilidades };
+    const id = $('#participanteId').val();
+    const res = id ? await fetch(`${CATALOGO_URL}/api/participantes/${id}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+                   : await fetch(`${CATALOGO_URL}/api/participantes`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if (res.ok) {
+        bootstrap.Modal.getInstance('#modalParticipante').hide();
+        showToast('Participante guardado.', 'success');
+        await cargarParticipantes();
+    } else {
+        const err = await res.json().catch(()=>({title:'Error'}));
+        showToast(err.title, 'error');
+    }
+}
+
+function abrirModalOficina() {
+    $('#oficinaId').val(''); $('#formOficina')[0].reset(); $('#formOficina').removeClass('was-validated');
+    $('#modalOficinaTitulo').text('Nueva Oficina');
+    new bootstrap.Modal('#modalOficina').show();
+}
+
+async function editarOficina(id) {
+    let res;
+    try { res = await fetch(`${CATALOGO_URL}/api/oficinas/${id}`); }
+    catch { showToast('Error de conexión al cargar la oficina.', 'error'); return; }
+    if (!res.ok) { showToast('No se pudo cargar la oficina.', 'error'); return; }
+    const o = await res.json();
+    $('#formOficina')[0].reset(); $('#formOficina').removeClass('was-validated');
+    $('#oficinaId').val(o.id);
+    $('#ofNombre').val(o.nombre);
+    $('#ofDireccion').val(o.direccionFisica);
+    $('#ofCoordenadas').val(o.coordenadas||'');
+    $('#modalOficinaTitulo').text('Editar Oficina');
+    new bootstrap.Modal('#modalOficina').show();
+}
+
+async function guardarOficina() {
+    const form = $('#formOficina')[0]; form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
+    const payload = { nombre: $('#ofNombre').val(), direccionFisica: $('#ofDireccion').val(), coordenadas: $('#ofCoordenadas').val()||null };
+    const id = $('#oficinaId').val();
+    let res;
+    try {
+        res = id
+            ? await fetch(`${CATALOGO_URL}/api/oficinas/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+            : await fetch(`${CATALOGO_URL}/api/oficinas`,         {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    } catch { showToast('Error de conexión.', 'error'); return; }
+    if (res.ok) {
+        bootstrap.Modal.getInstance('#modalOficina')?.hide();
+        showToast(id ? 'Oficina actualizada.' : 'Oficina registrada.', 'success');
+        try { await cargarOficinas(); } catch { showToast('Guardado exitoso. Recargue si no ve el cambio.', 'warning'); }
+    } else {
+        const err = await res.json().catch(()=>({title:'Error'}));
+        showToast(err.title, 'error');
+    }
+}
+
+function editarTraslado(id, origen, destino, minutos) {
+    $('#trasladoId').val(id);
+    $('#trasladoDescripcion').text(`${origen} → ${destino}`);
+    $('#trasladoMinutos').val(minutos);
+    new bootstrap.Modal('#modalTraslado').show();
+}
+
+async function guardarTraslado() {
+    const id = $('#trasladoId').val();
+    const min = parseInt($('#trasladoMinutos').val());
+    if (!min || min < 1) { showToast('Ingrese un tiempo válido en minutos.', 'warning'); return; }
+    let res;
+    try {
+        res = await fetch(`${CATALOGO_URL}/api/traslados/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tiempoMinutos: min})});
+    } catch { showToast('Error de conexión.', 'error'); return; }
+    if (res.ok) {
+        bootstrap.Modal.getInstance('#modalTraslado')?.hide();
+        showToast('Traslado actualizado (par simétrico incluido).', 'success');
+        try { await cargarTraslados(); } catch { showToast('Guardado exitoso. Recargue si no ve el cambio.', 'warning'); }
+    } else {
+        const err = await res.json().catch(()=>({title:'Error'}));
+        showToast(err.title, 'error');
+    }
+}
+
+async function agregarTraslado() {
+    const origen = $('#trasOrigen').val(), destino = $('#trasDestino').val(), min = parseInt($('#trasMinutos').val());
+    if (!origen || !destino || !min || origen === destino) { showToast('Complete todos los campos de traslado.', 'warning'); return; }
+    const res = await fetch(`${CATALOGO_URL}/api/traslados`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oficinaOrigenId:origen,oficinaDestinoId:destino,tiempoMinutos:min})});
+    if (res.ok) { showToast('Par de traslado registrado (RN-07: simétrico automático).', 'success'); await cargarTraslados(); $('#trasMinutos').val(''); }
+    else { const err = await res.json().catch(()=>({title:'Error'})); showToast(err.title, 'error'); }
+}
+
+/* ════════════════════════════════════════════════════════
+   Módulo: Generar Agenda
+════════════════════════════════════════════════════════ */
+async function load_agenda() {
+    await cargarIdiomas();
+    await cargarInversores();
+    await cargarParticipantesParaAgenda();
+}
+
+async function cargarParticipantesParaAgenda() {
+    const res = await fetch(`${CATALOGO_URL}/api/participantes/activos`);
+    const participantes = res.ok ? await res.json() : [];
+    const cont = $('#candidatosContainer').html('');
+    if (!participantes.length) { cont.html('<div class="text-muted small">No hay participantes activos.</div>'); return; }
+    participantes.forEach(p => cont.append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="${p.id}" id="cand-${p.id}"><label class="form-check-label small" for="cand-${p.id}">${p.nombreCompleto} — ${p.cargo}</label></div>`));
+}
+
+async function cargarPanelInversor(id) {
+    const panel = $('#panelInversor');
+    if (!id) { panel.html('<div class="empty-state"><i class="bi bi-person-badge"></i>Seleccione un inversor para ver sus datos.</div>'); $('#agFecha').removeAttr('min max'); return; }
+    const res = await fetch(`${CATALOGO_URL}/api/inversores/${id}`);
+    if (!res.ok) return;
+    const inv = await res.json();
+    const ini = inv.fechaInicioVisita.substring(0,10), fin = inv.fechaFinVisita.substring(0,10);
+    // RN-08: restringir rango de fecha
+    $('#agFecha').attr('min', ini).attr('max', fin).val(ini);
+    panel.html(`
+        <h6 class="fw-bold text-brand mb-2"><i class="bi bi-person-badge me-1"></i>${inv.nombreCompleto}</h6>
+        <div class="row g-2 small">
+            <div class="col-6"><span class="text-muted">Empresa:</span> <strong>${inv.empresa}</strong></div>
+            <div class="col-6"><span class="text-muted">País:</span> ${inv.paisOrigen}</div>
+            <div class="col-12"><span class="text-muted">Hospedaje:</span> ${inv.lugarHospedaje}</div>
+            <div class="col-12"><span class="text-muted">Visita:</span> <span class="badge bg-brand">${ini}</span> → <span class="badge bg-brand">${fin}</span></div>
+            <div class="col-12"><span class="text-muted">Idiomas:</span> ${(inv.idiomas||[]).map(l=>`<span class="badge bg-success-subtle text-success lang-chip">${l.nombre}</span>`).join(' ')}</div>
+        </div>`);
+}
+
+async function generarAgenda() {
+    const inversorId = $('#agInversor').val();
+    if (!inversorId) { showToast('Seleccione un inversor.', 'warning'); return; }
+    const candidatos = [...$('#candidatosContainer input:checked')].map(c=>c.value);
+    if (!candidatos.length) { showToast('Seleccione al menos un candidato.', 'warning'); return; }
+    const fecha = $('#agFecha').val(), duracion = parseInt($('#agDuracion').val()), meta = parseInt($('#agMeta').val());
+    if (!fecha) { showToast('Seleccione una fecha.', 'warning'); return; }
+
+    const btn = $('#btnGenerar');
+    btn.html('<span class="spinner-border spinner-border-sm me-1"></span>Calculando…').prop('disabled',true);
+    $('#resultadoAgenda').html('<div class="card p-3"><div class="skeleton mb-2"></div><div class="skeleton mb-2 w-75"></div><div class="skeleton w-50"></div></div>');
+
+    const res = await fetch(`${AGENDAS_URL}/agendas/generar`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({inversorId, candidatoIds: candidatos, fecha, duracionMinutos: duracion, metaReuniones: meta})
+    });
+
+    btn.html('<i class="bi bi-magic me-1"></i>Generar agenda').prop('disabled',false);
+
+    if (res.ok) {
+        const agenda = await res.json();
+        renderResultadoAgenda(agenda);
+        showToast(`Agenda generada: ${agenda.reunionesLogradas} de ${agenda.metaSolicitada} reuniones.`, agenda.completa?'success':'info');
+    } else {
+        const err = await res.json().catch(()=>({title:'Error al generar agenda.', codigoError:'ERROR'}));
+        $('#resultadoAgenda').html(`<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1"></i><strong>${err.codigoError||'ERROR'}</strong> — ${err.title}</div>`);
+        showToast(err.title, 'error');
+    }
+}
+
+function renderResultadoAgenda(agenda) {
+    const parcial = !agenda.completa ? `<span class="badge bg-warning text-dark ms-2">${agenda.reunionesLogradas}/${agenda.metaSolicitada} logradas</span>` : `<span class="badge bg-success ms-2">${agenda.reunionesLogradas}/${agenda.metaSolicitada} ✓</span>`;
+    const reuniones = (agenda.reuniones||[]).map((r,i,arr) => {
+        const ini = fmtTime(r.horaInicio), fin = fmtTime(r.horaFin);
+        const traslado = r.tiempoTrasladoSiguiente > 0 ? `<div class="text-center py-1"><small class="text-muted"><i class="bi bi-arrow-down"></i> Traslado: ${r.tiempoTrasladoSiguiente} min</small></div>` : '';
+        return `<div class="d-flex gap-2 mb-1">
+            <div class="d-flex flex-column align-items-center">
+                <div class="timeline-dot"></div>
+                ${i < arr.length-1 ? '<div class="timeline-line"></div>' : ''}
+            </div>
+            <div class="card p-2 flex-grow-1 mb-1">
+                <div class="d-flex justify-content-between">
+                    <strong class="small">${r.participanteNombre}</strong>
+                    <span class="text-brand small fw-bold">${ini}–${fin}</span>
+                </div>
+                <div class="small text-muted">${r.participanteCargo}</div>
+                <div class="small"><i class="bi bi-building me-1"></i>${r.oficinaNombre} <span class="text-muted">· ${r.oficinaDirección||r.officeDir||r.oficinaDir||''}</span></div>
+                <span class="badge bg-secondary-subtle text-secondary lang-chip mt-1">${r.idiomaReunion}</span>
+            </div>
+        </div>${traslado}`;
+    }).join('');
+    $('#resultadoAgenda').html(`
+        <div class="card p-3">
+            <div class="d-flex align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Itinerario generado ${parcial}</h6>
+                <button class="btn btn-sm btn-outline-brand ms-auto" onclick="go('agendas');cargarAgendas()"><i class="bi bi-list-check me-1"></i>Ver en Agendas</button>
+            </div>
+            ${reuniones}
+        </div>`);
+}
+
+/* ════════════════════════════════════════════════════════
+   Módulo: Agendas (listado, detalle, anular, PDF)
+════════════════════════════════════════════════════════ */
+async function load_agendas() {
+    await cargarInversores();
+    await cargarAgendas();
+}
+
+async function cargarAgendas() {
+    const params = new URLSearchParams();
+    const inv = $('#filtroInversor').val(), fecha = $('#filtroFecha').val(), estado = $('#filtroEstado').val();
+    if (inv) params.append('inversorId', inv);
+    if (fecha) params.append('fecha', fecha);
+    if (estado) params.append('estado', estado);
+
+    $('#bodyAgendas').html('<tr><td colspan="6"><div class="skeleton"></div></td></tr>');
+    const res = await fetch(`${AGENDAS_URL}/agendas?${params}`);
+    if (!res.ok) { $('#bodyAgendas').html('<tr><td colspan="6"><div class="alert alert-warning m-2">Servicio de agendas no disponible. <button class="btn btn-sm btn-warning" onclick="cargarAgendas()">Reintentar</button></div></td></tr>'); return; }
+    const lista = await res.json();
+    $('#stat-agendas').text(lista.length);
+    if (!lista.length) { $('#bodyAgendas').html('<tr><td colspan="6"><div class="empty-state"><i class="bi bi-calendar2"></i>No hay agendas que coincidan con los filtros.</div></td></tr>'); return; }
+    $('#bodyAgendas').html(lista.map(a => `
+        <tr>
+            <td class="font-monospace small">${a.id.substring(0,8)}…</td>
+            <td>${a.inversorNombre}</td>
+            <td>${fmt(a.fecha)}</td>
+            <td>${a.cantidadReuniones}</td>
+            <td><span class="badge ${a.estado==='Activa'?'bg-success-subtle text-success':'bg-secondary-subtle text-secondary'}">${a.estado}</span></td>
+            <td class="d-flex gap-1 flex-wrap">
+                <button class="btn btn-sm btn-outline-brand min-touch" onclick="verDetalle('${a.id}')"><i class="bi bi-eye"></i></button>
+                <a class="btn btn-sm btn-outline-secondary min-touch" href="/Agendas/DescargarPdf?id=${a.id}" title="Descargar PDF (RN-15)"><i class="bi bi-file-pdf"></i></a>
+                ${a.estado==='Activa'?`<button class="btn btn-sm btn-outline-warning min-touch" onclick="setAnular('${a.id}')"><i class="bi bi-x-circle"></i></button>`:'<button class="btn btn-sm btn-outline-secondary min-touch" disabled title="Ya anulada (HTTP 409)"><i class="bi bi-x-circle"></i></button>'}
+            </td>
+        </tr>`).join(''));
+}
+
+async function verDetalle(id) {
+    const body = $('#offcanvasAgendaBody');
+    body.html('<div class="skeleton mb-2"></div><div class="skeleton mb-2 w-75"></div><div class="skeleton w-50"></div>');
+    new bootstrap.Offcanvas('#offcanvasAgenda').show();
+    const res = await fetch(`${AGENDAS_URL}/agendas/${id}`);
+    if (!res.ok) { body.html('<div class="alert alert-warning">Error cargando detalle.</div>'); return; }
+    const a = await res.json();
+    const reuniones = (a.reuniones||[]).map((r,i,arr) => `
+        <div class="d-flex gap-2 mb-2">
+            <div class="d-flex flex-column align-items-center">
+                <div class="timeline-dot"></div>
+                ${i<arr.length-1?'<div class="timeline-line"></div>':''}
+            </div>
+            <div class="card p-2 flex-grow-1 small">
+                <div class="d-flex justify-content-between">
+                    <strong>${r.participanteNombre}</strong>
+                    <span class="text-brand fw-bold">${fmtTime(r.horaInicio)}–${fmtTime(r.horaFin)}</span>
+                </div>
+                <div class="text-muted">${r.participanteCargo}</div>
+                <div><i class="bi bi-building me-1"></i>${r.oficinaNombre}</div>
+                <div class="text-muted">${r.oficinaDir||''}</div>
+                <span class="badge bg-secondary-subtle text-secondary lang-chip">${r.idiomaReunion}</span>
+                ${r.tiempoTrasladoSiguiente>0?`<div class="text-muted mt-1"><i class="bi bi-arrow-down me-1"></i>Traslado: ${r.tiempoTrasladoSiguiente} min</div>`:''}
+            </div>
+        </div>`).join('');
+    body.html(`
+        <div class="mb-3">
+            <h6 class="fw-bold">${a.inversorNombre} — ${a.inversorEmpresa}</h6>
+            <div class="small text-muted">${fmt(a.fecha)}</div>
+            <span class="badge ${a.estado==='Activa'?'bg-success':'bg-secondary'}">${a.estado}</span>
+            ${a.estado==='Anulada'?`<div class="small text-muted mt-1">Anulada: ${fmtDt(a.fechaAnulacion)}</div>`:''}
+            <div class="small mt-1"><strong>${a.reunionesLogradas}</strong> reuniones · Generada: ${fmtDt(a.fechaGeneracion)}</div>
+        </div>
+        <div class="d-flex gap-2 mb-3">
+            <a class="btn btn-sm btn-outline-brand" href="/Agendas/DescargarPdf?id=${a.id}"><i class="bi bi-file-pdf me-1"></i>PDF</a>
+            ${a.estado==='Activa'?`<button class="btn btn-sm btn-outline-warning" onclick="setAnular('${a.id}')"><i class="bi bi-x-circle me-1"></i>Anular</button>`:''}
+        </div>
+        <hr>${reuniones}`);
+}
+
+function setAnular(id) {
+    $('#btnConfirmarAnular').off('click').on('click', async () => {
+        const res = await fetch(`${AGENDAS_URL}/agendas/${id}`, {method:'DELETE'});
+        bootstrap.Modal.getInstance('#modalAnular')?.hide();
+        bootstrap.Offcanvas.getInstance('#offcanvasAgenda')?.hide();
+        if (res.ok) {
+            showToast(`Agenda anulada. Timestamp: ${new Date().toLocaleString('es-CR')}. PDF disponible.`, 'info');
+            await cargarAgendas();
+        } else {
+            const err = await res.json().catch(()=>({title:'Error'}));
+            showToast(err.title, 'error');
+        }
+    });
+    new bootstrap.Modal('#modalAnular').show();
+}
+
+/* ════════════════════════════════════════════════════════
+   Utilidades
+════════════════════════════════════════════════════════ */
+function fmt(d) { if(!d) return ''; return new Date(d).toLocaleDateString('es-CR',{year:'numeric',month:'short',day:'numeric'}); }
+function fmtDt(d) { if(!d) return ''; return new Date(d).toLocaleString('es-CR'); }
+function fmtTime(t) { if(!t) return ''; if(typeof t==='string'&&t.includes(':')) return t.substring(0,5); return t; }
+
+function filtrarTabla(tableId, q) {
+    const term = q.toLowerCase();
+    $(`#${tableId} tbody tr`).each(function(){
+        $(this).toggle($(this).text().toLowerCase().includes(term));
+    });
+}
+</script>
+}
+
+</div>

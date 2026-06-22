@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es-CR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendarización de Inversores · PROCOMER</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  /* === CSS de marca (< 150 líneas) === */
+  :root{
+    --brand:#0c7c59;          /* verde institucional Costa Rica/PROCOMER */
+    --brand-dark:#095c42;
+    --brand-soft:#e7f4ef;
+    --radius:.6rem;
+  }
+  body{ background:#f6f8f7; padding-top:4.25rem; }
+  .navbar-brand{ font-weight:700; letter-spacing:.2px; }
+  .bg-brand{ background:var(--brand)!important; }
+  .text-brand{ color:var(--brand)!important; }
+  .btn-brand{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn-brand:hover{ background:var(--brand-dark); border-color:var(--brand-dark); color:#fff; }
+  .btn-outline-brand{ color:var(--brand); border-color:var(--brand); }
+  .btn-outline-brand:hover{ background:var(--brand); color:#fff; }
+  .nav-pills .nav-link.active{ background:var(--brand); }
+  .card{ border:0; border-radius:var(--radius); box-shadow:0 1px 3px rgba(16,40,32,.08); }
+  .stat-card .icon{ width:46px; height:46px; display:grid; place-items:center; border-radius:.5rem; background:var(--brand-soft); color:var(--brand); font-size:1.4rem; }
+  .table thead th{ font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:#5b6b65; }
+  .page{ display:none; }
+  .page.active{ display:block; animation:fade .18s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  .lang-chip{ font-size:.72rem; }
+  .timeline-line{ position:relative; padding-left:1.4rem; }
+  .timeline-line::before{ content:""; position:absolute; left:.45rem; top:.2rem; bottom:.2rem; width:2px; background:var(--brand-soft); }
+  .timeline-dot{ position:absolute; left:0; width:.95rem; height:.95rem; border-radius:50%; background:#fff; border:3px solid var(--brand); }
+  .skeleton{ background:linear-gradient(90deg,#eef1f0 25%,#e2e7e5 37%,#eef1f0 63%); background-size:400% 100%; animation:sk 1.2s ease infinite; border-radius:.35rem; }
+  @keyframes sk{ 0%{background-position:100% 0;} 100%{background-position:-100% 0;} }
+  .empty-state{ padding:3rem 1rem; text-align:center; color:#7c8a85; }
+  .empty-state i{ font-size:2.6rem; opacity:.5; }
+  .min-touch{ min-height:44px; min-width:44px; }
+  footer{ color:#8a9893; font-size:.82rem; }
+  @media (prefers-reduced-motion: reduce){ .page.active,.skeleton{ animation:none; } }
+</style>
+</head>
+<body>
+
+<!-- ===== Navbar ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-brand fixed-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#" onclick="go('inicio')">
+      <i class="bi bi-calendar2-week"></i> PROCOMER · Agendas
+    </a>
+    <button class="navbar-toggler min-touch" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto gap-lg-1">
+        <li class="nav-item"><a class="nav-link" data-page="inicio" href="#" onclick="go('inicio')"><i class="bi bi-house-door me-1"></i>Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="inversores" href="#" onclick="go('inversores')"><i class="bi bi-person-badge me-1"></i>Inversores</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="participantes" href="#" onclick="go('participantes')"><i class="bi bi-people me-1"></i>Participantes</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="agenda" href="#" onclick="go('agenda')"><i class="bi bi-magic me-1"></i>Generar agenda</a></li>
+        <li class="nav-item"><a class="nav-link" data-page="agendas" href="#" onclick="go('agendas')"><i class="bi bi-list-check me-1"></i>Agendas</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="#" class="text-brand text-decoration-none" onclick="go('inicio')">Inicio</a></li>
+      <li class="breadcrumb-item active" id="crumb" aria-current="page">Inicio</li>
+    </ol>
+  </nav>
+
+  <!-- ============ PÁGINA: INICIO ============ -->
+  <section id="page-inicio" class="page active">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-3">
+      <div>
+        <h1 class="h3 mb-1">Coordinación de visitas</h1>
+        <p class="text-muted mb-0">Registra los datos maestros y genera la agenda diaria del inversor.</p>
+      </div>
+      <button class="btn btn-brand min-touch mt-2" onclick="go('agenda')"><i class="bi bi-magic me-1"></i>Generar agenda</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3"><div class="card stat-card p-3 h-100"><div class="d-flex gap-3 align-items-center"><div class="icon"><i class="bi bi-person-badge"></i></div><div><div class="h4 mb-0">3</div><div class="small text-muted">Inversores</div></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="card stat-card p-3 h-100"><div class="d-flex gap-3 align-items-center"><div class="icon"><i class="bi bi-people"></i></div><div><div class="h4 mb-0">5</div><div class="small text-muted">Participantes</div></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="card stat-card p-3 h-100"><div class="d-flex gap-3 align-items-center"><div class="icon"><i class="bi bi-building"></i></div><div><div class="h4 mb-0">5</div><div class="small text-muted">Oficinas</div></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="card stat-card p-3 h-100"><div class="d-flex gap-3 align-items-center"><div class="icon"><i class="bi bi-calendar-check"></i></div><div><div class="h4 mb-0">3</div><div class="small text-muted">Agendas</div></div></div></div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6"><div class="card p-4 h-100"><h2 class="h6 text-uppercase text-muted">Paso 1 · Datos maestros</h2><p class="mb-3">Mantén actualizados inversores, participantes, oficinas y la matriz de traslados.</p><div class="d-flex flex-wrap gap-2"><button class="btn btn-outline-brand btn-sm" onclick="go('inversores')">Inversores</button><button class="btn btn-outline-brand btn-sm" onclick="go('participantes')">Participantes y oficinas</button></div></div></div>
+      <div class="col-md-6"><div class="card p-4 h-100"><h2 class="h6 text-uppercase text-muted">Paso 2 · Agenda</h2><p class="mb-3">Selecciona un inversor, sus candidatos y la fecha. El motor calcula la secuencia óptima.</p><button class="btn btn-brand btn-sm" onclick="go('agenda')">Ir a generar agenda</button></div></div>
+    </div>
+  </section>
+
+  <!-- ============ PÁGINA: INVERSORES ============ -->
+  <section id="page-inversores" class="page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <h1 class="h4 mb-0">Inversores</h1>
+      <div class="d-flex gap-2">
+        <div class="input-group input-group-sm" style="width:230px">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" placeholder="Buscar inversor…" oninput="filterTable('tblInversores',this.value)">
+        </div>
+        <button class="btn btn-brand btn-sm min-touch" data-bs-toggle="modal" data-bs-target="#modalInversor" onclick="resetInversorForm()"><i class="bi bi-plus-lg me-1"></i>Nuevo</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Nombre</th><th>Empresa</th><th>País</th><th>Idiomas</th><th>Visita</th><th class="text-end pe-3">Acciones</th></tr></thead>
+          <tbody id="tblInversores">
+            <tr><td class="ps-3 fw-semibold">John Smith</td><td>Acme Robotics</td><td>Estados Unidos</td><td><span class="badge text-bg-light lang-chip">Español</span> <span class="badge text-bg-light lang-chip">Inglés</span></td><td>01–05 Jul 2026</td><td class="text-end pe-3"><button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#modalInversor" title="Editar"><i class="bi bi-pencil"></i></button> <button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('al inversor John Smith',true)" title="Eliminar"><i class="bi bi-trash"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Hans Müller</td><td>Siemens AG</td><td>Alemania</td><td><span class="badge text-bg-light lang-chip">Inglés</span></td><td>08–10 Jul 2026</td><td class="text-end pe-3"><button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#modalInversor"><i class="bi bi-pencil"></i></button> <button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('al inversor Hans Müller',false)"><i class="bi bi-trash"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Sophie Laurent</td><td>Dassault Systèmes</td><td>Francia</td><td><span class="badge text-bg-light lang-chip">Español</span> <span class="badge text-bg-light lang-chip">Francés</span></td><td>15–18 Jul 2026</td><td class="text-end pe-3"><button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#modalInversor"><i class="bi bi-pencil"></i></button> <button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('a la inversora Sophie Laurent',false)"><i class="bi bi-trash"></i></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="emptyInversores" class="empty-state d-none"><i class="bi bi-inbox d-block mb-2"></i>No hay inversores que coincidan con la búsqueda.</div>
+    </div>
+  </section>
+
+  <!-- ============ PÁGINA: PARTICIPANTES / OFICINAS ============ -->
+  <section id="page-participantes" class="page">
+    <h1 class="h4 mb-3">Participantes, oficinas y traslados</h1>
+    <ul class="nav nav-pills mb-3 gap-2" role="tablist">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-part">Participantes</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-ofi">Oficinas</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-mat">Matriz de traslados</button></li>
+    </ul>
+    <div class="tab-content">
+      <!-- Participantes -->
+      <div class="tab-pane fade show active" id="tab-part">
+        <div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm min-touch" data-bs-toggle="modal" data-bs-target="#modalParticipante" onclick="resetParticipanteForm()"><i class="bi bi-plus-lg me-1"></i>Nuevo participante</button></div>
+        <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+          <thead><tr><th class="ps-3">Nombre</th><th>Cargo / Institución</th><th>Oficina</th><th>Idiomas</th><th>Estado</th><th class="text-end pe-3">Acciones</th></tr></thead>
+          <tbody>
+            <tr><td class="ps-3 fw-semibold">María Rodríguez</td><td>Directora de Inversión · PROCOMER</td><td>Edificio Central PROCOMER</td><td><span class="badge text-bg-light lang-chip">Español</span> <span class="badge text-bg-light lang-chip">Inglés</span></td><td><span class="badge text-bg-success-subtle text-success-emphasis">Activo</span></td><td class="text-end pe-3"><button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Carlos Jiménez</td><td>Asesor · COMEX</td><td>COMEX – Escazú</td><td><span class="badge text-bg-light lang-chip">Español</span> <span class="badge text-bg-light lang-chip">Inglés</span> <span class="badge text-bg-light lang-chip">Francés</span></td><td><span class="badge text-bg-success-subtle text-success-emphasis">Activo</span></td><td class="text-end pe-3"><button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Ana Vargas</td><td>Gerente · CINDE</td><td>CINDE – Escazú</td><td><span class="badge text-bg-light lang-chip">Español</span> <span class="badge text-bg-light lang-chip">Inglés</span></td><td><span class="badge text-bg-success-subtle text-success-emphasis">Activo</span></td><td class="text-end pe-3"><button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Luis Mora</td><td>Cámara de Industrias</td><td>Cámara de Industrias – Tibás</td><td><span class="badge text-bg-light lang-chip">Español</span></td><td><span class="badge text-bg-secondary-subtle text-secondary-emphasis">Inactivo</span></td><td class="text-end pe-3"><button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button></td></tr>
+          </tbody>
+        </table></div></div>
+      </div>
+      <!-- Oficinas -->
+      <div class="tab-pane fade" id="tab-ofi">
+        <div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm min-touch" data-bs-toggle="modal" data-bs-target="#modalOficina"><i class="bi bi-plus-lg me-1"></i>Nueva oficina</button></div>
+        <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+          <thead><tr><th class="ps-3">Oficina</th><th>Dirección física</th><th>Participantes activos</th><th class="text-end pe-3">Acciones</th></tr></thead>
+          <tbody>
+            <tr><td class="ps-3 fw-semibold">Edificio Central PROCOMER</td><td>Barrio Tournón, San José</td><td>1</td><td class="text-end pe-3"><button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('la oficina Edificio Central PROCOMER',true)" title="No se puede eliminar (tiene participantes activos)"><i class="bi bi-trash"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">COMEX – Escazú</td><td>Plaza Tempo, Escazú</td><td>1</td><td class="text-end pe-3"><button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('la oficina COMEX – Escazú',true)"><i class="bi bi-trash"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">CINDE – Escazú</td><td>Plaza Roble, Escazú</td><td>1</td><td class="text-end pe-3"><button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('la oficina CINDE – Escazú',true)"><i class="bi bi-trash"></i></button></td></tr>
+            <tr><td class="ps-3 fw-semibold">Casa Presidencial</td><td>Zapote, San José</td><td>0</td><td class="text-end pe-3"><button class="btn btn-sm btn-light text-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar" onclick="setEliminar('la oficina Casa Presidencial',false)"><i class="bi bi-trash"></i></button></td></tr>
+          </tbody>
+        </table></div></div>
+      </div>
+      <!-- Matriz -->
+      <div class="tab-pane fade" id="tab-mat">
+        <div class="alert alert-info d-flex gap-2 py-2"><i class="bi bi-info-circle"></i><div class="small">La matriz es simétrica: al guardar A → B el sistema crea B → A con el mismo tiempo (RN-07).</div></div>
+        <div class="card"><div class="table-responsive"><table class="table table-bordered text-center align-middle mb-0">
+          <thead><tr><th class="bg-light"></th><th>PROCOMER</th><th>COMEX</th><th>CINDE</th><th>Casa Pres.</th></tr></thead>
+          <tbody>
+            <tr><th class="bg-light text-start ps-3">PROCOMER</th><td class="text-muted">—</td><td>30</td><td>35</td><td>20</td></tr>
+            <tr><th class="bg-light text-start ps-3">COMEX</th><td>30</td><td class="text-muted">—</td><td>10</td><td>25</td></tr>
+            <tr><th class="bg-light text-start ps-3">CINDE</th><td>35</td><td>10</td><td class="text-muted">—</td><td>28</td></tr>
+            <tr><th class="bg-light text-start ps-3">Casa Pres.</th><td>20</td><td>25</td><td>28</td><td class="text-muted">—</td></tr>
+          </tbody>
+        </table></div><div class="card-footer bg-white small text-muted">Tiempos en minutos.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PÁGINA: GENERAR AGENDA ============ -->
+  <section id="page-agenda" class="page">
+    <h1 class="h4 mb-3">Generar agenda</h1>
+    <div class="row g-3">
+      <!-- Formulario -->
+      <div class="col-lg-5">
+        <div class="card p-4">
+          <form id="formAgenda" class="needs-validation" novalidate onsubmit="generarAgenda(event)">
+            <div class="form-floating mb-3">
+              <select class="form-select" id="selInversor" required onchange="onSelectInversor()">
+                <option value="" selected disabled>Seleccione…</option>
+                <option value="john">John Smith — Acme Robotics</option>
+                <option value="hans">Hans Müller — Siemens AG</option>
+                <option value="sophie">Sophie Laurent — Dassault</option>
+              </select>
+              <label>Inversor</label>
+              <div class="invalid-feedback">Seleccione un inversor para continuar.</div>
+            </div>
+
+            <label class="form-label small fw-semibold">Participantes candidatos</label>
+            <div class="border rounded p-2 mb-3" style="max-height:160px; overflow:auto">
+              <div class="form-check"><input class="form-check-input" type="checkbox" checked id="c1"><label class="form-check-label" for="c1">María Rodríguez · PROCOMER</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" checked id="c2"><label class="form-check-label" for="c2">Carlos Jiménez · COMEX</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" checked id="c3"><label class="form-check-label" for="c3">Ana Vargas · CINDE</label></div>
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="c4"><label class="form-check-label" for="c4">Pedro Soto · Casa Presidencial</label></div>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input type="date" class="form-control" id="fecha" required disabled>
+              <label>Día de la agenda</label>
+              <div class="form-text" id="fechaHint">Seleccione primero un inversor.</div>
+              <div class="invalid-feedback">Indique una fecha dentro de la ventana de visita.</div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6"><div class="form-floating"><input type="number" class="form-control" id="dur" value="60" min="15" step="15" required><label>Duración (min)</label></div></div>
+              <div class="col-6"><div class="form-floating"><input type="number" class="form-control" id="meta" value="3" min="1" required><label>Meta de reuniones</label></div></div>
+            </div>
+
+            <button class="btn btn-brand w-100 min-touch" type="submit" id="btnGenerar">
+              <span class="spinner-border spinner-border-sm me-2 d-none" id="spinGen"></span>
+              <i class="bi bi-magic me-1" id="iconGen"></i><span id="txtGen">Generar agenda</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Panel dinámico + resultado -->
+      <div class="col-lg-7">
+        <!-- Datos del inversor (dinámico al seleccionar) -->
+        <div class="card p-4 mb-3" id="panelInversor">
+          <div class="empty-state py-4 m-0" id="invEmpty"><i class="bi bi-person-lines-fill d-block mb-2"></i>Seleccione un inversor para ver sus datos.</div>
+          <div id="invData" class="d-none">
+            <div class="d-flex justify-content-between align-items-start">
+              <div><h2 class="h5 mb-1" id="invName"></h2><div class="text-muted" id="invCompany"></div></div>
+              <span class="badge text-bg-light" id="invCountry"></span>
+            </div>
+            <hr>
+            <div class="row small">
+              <div class="col-sm-6 mb-2"><div class="text-muted">Idiomas</div><div id="invLangs"></div></div>
+              <div class="col-sm-6 mb-2"><div class="text-muted">Ventana de visita</div><div id="invWindow" class="fw-semibold"></div></div>
+              <div class="col-12"><div class="text-muted">Punto de partida</div><div id="invHotel"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="resultadoArea"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PÁGINA: AGENDAS ============ -->
+  <section id="page-agendas" class="page">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-2">
+      <div><h1 class="h4 mb-1">Agendas</h1><p class="text-muted small mb-0">Consulta, detalle, descarga de PDF y anulación lógica (CU-05 · CU-06).</p></div>
+      <button class="btn btn-brand btn-sm min-touch" onclick="go('agenda')"><i class="bi bi-plus-lg me-1"></i>Nueva agenda</button>
+    </div>
+
+    <!-- Filtros combinables: inversor + fecha + estado (CU-05 / AC-08) -->
+    <div class="card p-3 mb-3"><div class="row g-2 align-items-end">
+      <div class="col-md-4"><label class="form-label small mb-1">Inversor</label>
+        <select class="form-select form-select-sm" id="fInversor"><option value="">Todos</option><option>John Smith</option><option>Hans Müller</option><option>Sophie Laurent</option></select></div>
+      <div class="col-6 col-md-3"><label class="form-label small mb-1">Fecha de jornada</label>
+        <input type="date" class="form-control form-control-sm" id="fFecha"></div>
+      <div class="col-6 col-md-3"><label class="form-label small mb-1">Estado</label>
+        <select class="form-select form-select-sm" id="fEstado"><option value="">Todos</option><option value="Activa">Activa</option><option value="Anulada">Anulada</option></select></div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-brand btn-sm flex-fill min-touch" onclick="aplicarFiltros()"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+        <button class="btn btn-light btn-sm min-touch" onclick="limpiarFiltros()" title="Limpiar filtros"><i class="bi bi-arrow-counterclockwise"></i></button>
+      </div>
+    </div></div>
+
+    <div class="card">
+      <!-- estado: cargando -->
+      <div id="agendasLoading" class="p-3 d-none">
+        <div class="skeleton mb-2" style="height:44px"></div><div class="skeleton mb-2" style="height:44px"></div><div class="skeleton" style="height:44px"></div>
+      </div>
+      <!-- estado: error de servicio (HTTP 503) -->
+      <div id="agendasError" class="empty-state d-none"><i class="bi bi-wifi-off d-block mb-2"></i>No fue posible cargar las agendas: el servicio no está disponible (HTTP 503).<div class="mt-3"><button class="btn btn-sm btn-outline-brand" onclick="aplicarFiltros()"><i class="bi bi-arrow-clockwise me-1"></i>Reintentar</button></div></div>
+      <!-- estado: datos -->
+      <div id="agendasTabla" class="table-responsive"><table class="table table-hover align-middle mb-0">
+        <thead><tr><th class="ps-3">ID</th><th>Inversor</th><th>Fecha</th><th>Reuniones</th><th>Estado</th><th class="text-end pe-3">Acciones</th></tr></thead>
+        <tbody id="tblAgendas">
+          <tr data-id="A-001" data-inversor="John Smith" data-fecha="2026-07-02" data-estado="Activa">
+            <td class="ps-3 fw-semibold">A-001</td><td>John Smith</td><td>02 Jul 2026</td><td>3 / 3</td>
+            <td class="estado-cell"><span class="badge text-bg-success-subtle text-success-emphasis">Activa</span></td>
+            <td class="text-end pe-3"><button class="btn btn-sm btn-outline-brand" onclick="verDetalle('A-001')"><i class="bi bi-eye me-1"></i>Detalle</button> <button class="btn btn-sm btn-light" onclick="descargarPdf('A-001')" title="Descargar PDF"><i class="bi bi-file-earmark-pdf text-danger"></i></button> <button class="btn btn-sm btn-light text-danger btn-anular" onclick="abrirAnular('A-001')" title="Anular agenda"><i class="bi bi-x-circle"></i></button></td>
+          </tr>
+          <tr data-id="A-002" data-inversor="Hans Müller" data-fecha="2026-07-09" data-estado="Activa">
+            <td class="ps-3 fw-semibold">A-002</td><td>Hans Müller</td><td>09 Jul 2026</td><td><span class="text-warning-emphasis">2 / 4</span></td>
+            <td class="estado-cell"><span class="badge text-bg-success-subtle text-success-emphasis">Activa</span></td>
+            <td class="text-end pe-3"><button class="btn btn-sm btn-outline-brand" onclick="verDetalle('A-002')"><i class="bi bi-eye me-1"></i>Detalle</button> <button class="btn btn-sm btn-light" onclick="descargarPdf('A-002')" title="Descargar PDF"><i class="bi bi-file-earmark-pdf text-danger"></i></button> <button class="btn btn-sm btn-light text-danger btn-anular" onclick="abrirAnular('A-002')" title="Anular agenda"><i class="bi bi-x-circle"></i></button></td>
+          </tr>
+          <tr data-id="A-003" data-inversor="John Smith" data-fecha="2026-07-03" data-estado="Anulada">
+            <td class="ps-3 fw-semibold">A-003</td><td>John Smith</td><td>03 Jul 2026</td><td>2 / 3</td>
+            <td class="estado-cell"><span class="badge text-bg-secondary-subtle text-secondary-emphasis">Anulada</span></td>
+            <td class="text-end pe-3"><button class="btn btn-sm btn-outline-brand" onclick="verDetalle('A-003')"><i class="bi bi-eye me-1"></i>Detalle</button> <button class="btn btn-sm btn-light" onclick="descargarPdf('A-003')" title="Descargar PDF (disponible aun anulada, RN-15)"><i class="bi bi-file-earmark-pdf text-danger"></i></button> <button class="btn btn-sm btn-light text-muted btn-anular" disabled title="La agenda ya se encuentra anulada (HTTP 409)"><i class="bi bi-x-circle"></i></button></td>
+          </tr>
+        </tbody>
+      </table></div>
+      <div id="emptyAgendas" class="empty-state d-none"><i class="bi bi-calendar-x d-block mb-2"></i>No hay agendas que coincidan con los filtros aplicados.</div>
+    </div>
+  </section>
+
+  <footer class="text-center mt-5 pt-3 border-top">
+    Sistema de Calendarización de Inversores · PROCOMER-CALEND-2026 · Prototipo Gate 1 · Junio 2026
+  </footer>
+</div>
+
+<!-- ===== Modal Inversor ===== -->
+<div class="modal fade" id="modalInversor" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-person-badge me-1"></i>Inversor</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <form id="formInversor" class="needs-validation row g-3" novalidate onsubmit="guardarInversor(event)">
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="iNombre" placeholder="x" required><label>Nombre completo</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="iEmpresa" placeholder="x" required><label>Empresa</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="iPais" placeholder="x" required><label>País de origen</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="iHotel" placeholder="x"><label>Lugar de hospedaje / partida</label></div></div>
+      <div class="col-12">
+        <label class="form-label small fw-semibold">Idiomas <span class="text-danger">*</span> <span class="text-muted fw-normal">(RN-01: al menos uno)</span></label>
+        <div class="d-flex gap-3 flex-wrap" id="idiomasGroup">
+          <div class="form-check"><input class="form-check-input idioma" type="checkbox" id="le" value="Español"><label class="form-check-label" for="le">Español</label></div>
+          <div class="form-check"><input class="form-check-input idioma" type="checkbox" id="li" value="Inglés"><label class="form-check-label" for="li">Inglés</label></div>
+          <div class="form-check"><input class="form-check-input idioma" type="checkbox" id="lf" value="Francés"><label class="form-check-label" for="lf">Francés</label></div>
+          <div class="form-check"><input class="form-check-input idioma" type="checkbox" id="lp" value="Portugués"><label class="form-check-label" for="lp">Portugués</label></div>
+        </div>
+        <div class="text-danger small d-none" id="idiomaErr">El inversor debe tener al menos un idioma asignado.</div>
+      </div>
+      <div class="col-md-6"><div class="form-floating"><input type="date" class="form-control" id="iIni" required onchange="validarFechas()"><label>Inicio de visita</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><input type="date" class="form-control" id="iFin" required onchange="validarFechas()"><label>Cierre de visita</label><div class="invalid-feedback" id="finErr">La fecha de cierre no puede ser anterior a la de inicio.</div></div></div>
+    </form>
+  </div>
+  <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-brand" type="submit" form="formInversor">Guardar inversor</button></div>
+</div></div></div>
+
+<!-- ===== Modal Participante ===== -->
+<div class="modal fade" id="modalParticipante" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-person-plus me-1"></i>Participante</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <form id="formParticipante" class="needs-validation row g-3" novalidate onsubmit="guardarParticipante(event)">
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="pNombre" placeholder="x" required><label>Nombre completo</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><input class="form-control" id="pCargo" placeholder="x" required><label>Cargo / Institución</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><select class="form-select" id="pOficina" required><option value="" selected disabled>Seleccione…</option><option>Edificio Central PROCOMER</option><option>COMEX – Escazú</option><option>CINDE – Escazú</option><option>Casa Presidencial</option></select><label>Oficina</label><div class="invalid-feedback">El participante debe tener una oficina asignada (RN-05).</div></div></div>
+      <div class="col-md-6"><div class="form-floating"><select class="form-select" id="pEstado"><option value="Activo" selected>Activo</option><option value="Inactivo">Inactivo</option></select><label>Estado</label></div></div>
+
+      <!-- Idiomas que domina (uno o varios) -->
+      <div class="col-12">
+        <label class="form-label small fw-semibold mb-1">Idiomas que domina <span class="text-danger">*</span> <span class="text-muted fw-normal">(uno o varios · RN-04)</span></label>
+        <div class="d-flex gap-3 flex-wrap" id="pIdiomasGroup">
+          <div class="form-check"><input class="form-check-input p-idioma" type="checkbox" id="pe" value="Español"><label class="form-check-label" for="pe">Español</label></div>
+          <div class="form-check"><input class="form-check-input p-idioma" type="checkbox" id="pi" value="Inglés"><label class="form-check-label" for="pi">Inglés</label></div>
+          <div class="form-check"><input class="form-check-input p-idioma" type="checkbox" id="pf" value="Francés"><label class="form-check-label" for="pf">Francés</label></div>
+          <div class="form-check"><input class="form-check-input p-idioma" type="checkbox" id="pp" value="Portugués"><label class="form-check-label" for="pp">Portugués</label></div>
+        </div>
+        <div class="text-danger small d-none" id="pIdiomaErr">El participante debe tener al menos un idioma asignado.</div>
+      </div>
+
+      <!-- Bloques disponibles para reuniones (organizados por fecha) -->
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label small fw-semibold mb-0">Bloques disponibles para reuniones <span class="text-muted fw-normal">(por fecha)</span></label>
+          <button type="button" class="btn btn-sm btn-outline-brand" onclick="agregarBloque()"><i class="bi bi-plus-lg me-1"></i>Agregar bloque</button>
+        </div>
+        <div id="bloquesContainer" class="vstack gap-2"></div>
+        <div class="empty-state py-3 d-none" id="bloquesEmpty" style="font-size:.85rem"><i class="bi bi-calendar-week d-block mb-1"></i>Sin bloques. Agregue al menos una franja por fecha para que el participante sea candidato en el scheduling.</div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-brand" type="submit" form="formParticipante">Guardar participante</button></div>
+</div></div></div>
+
+<!-- ===== Modal Oficina ===== -->
+<div class="modal fade" id="modalOficina" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-building-add me-1"></i>Oficina</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <form id="formOficina" class="needs-validation row g-3" novalidate onsubmit="guardarOficina(event)">
+      <div class="col-12"><div class="form-floating"><input class="form-control" id="oNombre" placeholder="x" required><label>Nombre de la oficina</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-12"><div class="form-floating"><input class="form-control" id="oDir" placeholder="x" required><label>Dirección física</label><div class="invalid-feedback">Requerido.</div></div></div>
+      <div class="col-6"><div class="form-floating"><input class="form-control" id="oLat" placeholder="x"><label>Latitud (opcional)</label></div></div>
+      <div class="col-6"><div class="form-floating"><input class="form-control" id="oLng" placeholder="x"><label>Longitud (opcional)</label></div></div>
+    </form>
+  </div>
+  <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-brand" type="submit" form="formOficina">Guardar oficina</button></div>
+</div></div></div>
+
+<!-- ===== Modal Eliminar (confirmación) ===== -->
+<div class="modal fade" id="modalEliminar" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Confirmar eliminación</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <p id="eliminarTexto">¿Eliminar este registro?</p>
+    <div class="alert alert-danger py-2 small d-none" id="eliminarBloqueo"><i class="bi bi-lock me-1"></i><span id="eliminarBloqueoTxt"></span></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger" id="btnConfirmEliminar" data-bs-dismiss="modal" onclick="showToast('Registro eliminado.','success')">Eliminar</button></div>
+</div></div></div>
+
+<!-- ===== Modal Anular agenda ===== -->
+<div class="modal fade" id="modalAnular" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+  <div class="modal-header"><h5 class="modal-title"><i class="bi bi-x-circle me-1"></i>Anular agenda</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <p id="anularTexto">Se anulará la agenda.</p>
+    <div class="alert alert-secondary py-2 small mb-0"><i class="bi bi-info-circle me-1"></i>Anulación lógica (soft delete · RN-15): el estado pasa a <strong>Anulada</strong> y se registra la fecha y hora. El registro, sus reuniones y el PDF se conservan para trazabilidad.</div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger" onclick="confirmarAnular()"><i class="bi bi-x-circle me-1"></i>Anular agenda</button></div>
+</div></div></div>
+
+<!-- ===== Offcanvas detalle ===== -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="detalleAgenda" style="width:480px">
+  <div class="offcanvas-header bg-brand text-white"><h5 class="offcanvas-title" id="detalleTitulo">Detalle de agenda</h5><button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button></div>
+  <div class="offcanvas-body" id="detalleBody"></div>
+</div>
+
+<!-- ===== Toast container ===== -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ---- Navegación entre páginas ---- */
+const titulos = {inicio:'Inicio',inversores:'Inversores',participantes:'Participantes y oficinas',agenda:'Generar agenda',agendas:'Agendas'};
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-link[data-page]').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
+  document.getElementById('crumb').textContent = titulos[page];
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---- Toast helper ---- */
+function showToast(msg,type='success'){
+  const map={success:'text-bg-success',error:'text-bg-danger',info:'text-bg-secondary'};
+  const icon={success:'check-circle',error:'exclamation-octagon',info:'info-circle'};
+  const el=document.createElement('div');
+  el.className=`toast align-items-center border-0 ${map[type]}`;
+  el.role='alert';
+  el.innerHTML=`<div class="d-flex"><div class="toast-body"><i class="bi bi-${icon[type]} me-1"></i>${msg}</div><button class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+  document.querySelector('.toast-container').appendChild(el);
+  const t=new bootstrap.Toast(el,{delay:3200}); t.show();
+  el.addEventListener('hidden.bs.toast',()=>el.remove());
+}
+
+/* ---- Datos mock de inversores ---- */
+const inversores={
+  john:{name:'John Smith',company:'Acme Robotics',country:'Estados Unidos',langs:['Español','Inglés'],ini:'2026-07-01',fin:'2026-07-05',hotel:'Hotel Real Intercontinental, Escazú'},
+  hans:{name:'Hans Müller',company:'Siemens AG',country:'Alemania',langs:['Inglés'],ini:'2026-07-08',fin:'2026-07-10',hotel:'Hotel Marriott, Belén'},
+  sophie:{name:'Sophie Laurent',company:'Dassault Systèmes',country:'Francia',langs:['Español','Francés'],ini:'2026-07-15',fin:'2026-07-18',hotel:'Hotel Grano de Oro, San José'}
+};
+const fmt=d=>new Date(d+'T00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'});
+
+function onSelectInversor(){
+  const inv=inversores[document.getElementById('selInversor').value];
+  document.getElementById('invEmpty').classList.add('d-none');
+  document.getElementById('invData').classList.remove('d-none');
+  document.getElementById('invName').textContent=inv.name;
+  document.getElementById('invCompany').textContent=inv.company;
+  document.getElementById('invCountry').textContent=inv.country;
+  document.getElementById('invLangs').innerHTML=inv.langs.map(l=>`<span class="badge text-bg-light lang-chip">${l}</span>`).join(' ');
+  document.getElementById('invWindow').textContent=`${fmt(inv.ini)} – ${fmt(inv.fin)}`;
+  document.getElementById('invHotel').textContent=inv.hotel;
+  const f=document.getElementById('fecha');
+  f.disabled=false; f.min=inv.ini; f.max=inv.fin; f.value=inv.ini;
+  document.getElementById('fechaHint').textContent=`Debe estar entre ${fmt(inv.ini)} y ${fmt(inv.fin)} (RN-08).`;
+}
+
+/* ---- Generación de agenda (con loading / éxito / error) ---- */
+function generarAgenda(e){
+  e.preventDefault();
+  const form=document.getElementById('formAgenda');
+  if(!form.checkValidity()){ form.classList.add('was-validated'); return; }
+  // estado loading
+  document.getElementById('spinGen').classList.remove('d-none');
+  document.getElementById('iconGen').classList.add('d-none');
+  document.getElementById('txtGen').textContent='Calculando…';
+  document.getElementById('btnGenerar').disabled=true;
+  document.getElementById('resultadoArea').innerHTML=skeletonResultado();
+
+  setTimeout(()=>{
+    document.getElementById('spinGen').classList.add('d-none');
+    document.getElementById('iconGen').classList.remove('d-none');
+    document.getElementById('txtGen').textContent='Generar agenda';
+    document.getElementById('btnGenerar').disabled=false;
+
+    const inv=inversores[document.getElementById('selInversor').value];
+    // Demo: Hans (solo inglés) → simula caso de error de idioma incompatible (AC-05)
+    if(inv && inv.name==='Hans Müller'){
+      document.getElementById('resultadoArea').innerHTML=`
+        <div class="alert alert-warning"><div class="d-flex gap-2"><i class="bi bi-translate fs-5"></i><div>
+        <strong>No se pudo generar la agenda</strong><div class="small mt-1">No existen participantes que compartan idioma con el inversor. Verifique la configuración de idiomas de los candidatos. <span class="badge text-bg-light">HTTP 422 · IDIOMA_INCOMPATIBLE · RN-12</span></div></div></div></div>`;
+      showToast('Sin idioma compartido: revise los candidatos.','error');
+      return;
+    }
+    document.getElementById('resultadoArea').innerHTML=resultadoOk();
+    showToast('Agenda generada: 3 de 3 reuniones.','success');
+  },1400);
+}
+function skeletonResultado(){
+  return `<div class="card p-4"><div class="skeleton mb-2" style="height:20px;width:50%"></div>
+    <div class="skeleton mb-2" style="height:48px"></div><div class="skeleton mb-2" style="height:48px"></div><div class="skeleton" style="height:48px"></div></div>`;
+}
+function resultadoOk(){
+  return `<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h6 mb-0"><i class="bi bi-check-circle-fill text-success me-1"></i>Agenda viable · 3 de 3</h2>
+      <button class="btn btn-sm btn-outline-brand" onclick="descargarPdf()"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
+    </div>
+    <div class="timeline-line">
+      <div class="mb-3 position-relative"><span class="timeline-dot"></span><div class="fw-semibold">08:00 – 09:00 · María Rodríguez</div><div class="small text-muted">PROCOMER · <span class="badge text-bg-light lang-chip">Inglés</span></div></div>
+      <div class="small text-muted ms-1 mb-2"><i class="bi bi-arrow-down me-1"></i>Traslado 30 min</div>
+      <div class="mb-3 position-relative"><span class="timeline-dot"></span><div class="fw-semibold">09:30 – 10:30 · Carlos Jiménez</div><div class="small text-muted">COMEX · <span class="badge text-bg-light lang-chip">Inglés</span></div></div>
+      <div class="small text-muted ms-1 mb-2"><i class="bi bi-arrow-down me-1"></i>Traslado 10 min</div>
+      <div class="position-relative"><span class="timeline-dot"></span><div class="fw-semibold">10:40 – 11:40 · Ana Vargas</div><div class="small text-muted">CINDE · <span class="badge text-bg-light lang-chip">Inglés</span></div></div>
+    </div>
+    <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>Almuerzo 12:00–13:00 respetado (RN-11). Reuniones dentro de 08:00–17:00 (RN-09/10).</div>
+  </div>`;
+}
+
+/* ---- Validaciones modal inversor ---- */
+function resetInversorForm(){
+  const f=document.getElementById('formInversor');
+  f.reset(); f.classList.remove('was-validated');
+  document.getElementById('idiomaErr').classList.add('d-none');
+}
+function validarFechas(){
+  const ini=document.getElementById('iIni').value, fin=document.getElementById('iFin').value;
+  const finEl=document.getElementById('iFin');
+  finEl.setCustomValidity(ini&&fin&&fin<ini ? 'invalid' : '');
+}
+function guardarInversor(e){
+  e.preventDefault();
+  const f=document.getElementById('formInversor');
+  const idiomas=[...document.querySelectorAll('.idioma:checked')].length;
+  document.getElementById('idiomaErr').classList.toggle('d-none',idiomas>0);
+  validarFechas();
+  if(!f.checkValidity()||idiomas===0){ f.classList.add('was-validated'); return; }
+  bootstrap.Modal.getInstance(document.getElementById('modalInversor')).hide();
+  showToast('Inversor guardado correctamente.','success');
+}
+
+/* ---- Eliminar con bloqueo de negocio ---- */
+function setEliminar(texto,bloqueado){
+  document.getElementById('eliminarTexto').textContent='¿Eliminar '+texto+'?';
+  const box=document.getElementById('eliminarBloqueo'), btn=document.getElementById('btnConfirmEliminar');
+  if(bloqueado){
+    box.classList.remove('d-none');
+    document.getElementById('eliminarBloqueoTxt').textContent='No es posible eliminar: tiene registros activos asociados (RN-03 / RN-06).';
+    btn.disabled=true;
+  }else{ box.classList.add('d-none'); btn.disabled=false; }
+}
+
+/* ---- Filtros ---- */
+function filterTable(id,q){
+  q=q.toLowerCase(); let visibles=0;
+  document.querySelectorAll('#'+id+' tr').forEach(r=>{
+    const show=r.textContent.toLowerCase().includes(q); r.style.display=show?'':'none'; if(show)visibles++;
+  });
+  document.getElementById('emptyInversores').classList.toggle('d-none',visibles>0);
+}
+
+/* ========================================================
+   MÓDULO DE AGENDAS — CU-05 (consulta/anulación) · CU-06 (PDF)
+   ======================================================== */
+const agendas={
+  'A-001':{inversor:'John Smith',empresa:'Acme Robotics',fecha:'2026-07-02',estado:'Activa',meta:'3 / 3',reuniones:[
+    {ini:'08:00',fin:'09:00',part:'María Rodríguez',cargo:'Directora de Inversión · PROCOMER',ofi:'Edificio Central PROCOMER',dir:'Barrio Tournón, San José',idioma:'Inglés',traslado:'30 min → COMEX'},
+    {ini:'09:30',fin:'10:30',part:'Carlos Jiménez',cargo:'Asesor · COMEX',ofi:'COMEX – Escazú',dir:'Plaza Tempo, Escazú',idioma:'Inglés',traslado:'10 min → CINDE'},
+    {ini:'10:40',fin:'11:40',part:'Ana Vargas',cargo:'Gerente · CINDE',ofi:'CINDE – Escazú',dir:'Plaza Roble, Escazú',idioma:'Inglés',traslado:null}
+  ]},
+  'A-002':{inversor:'Hans Müller',empresa:'Siemens AG',fecha:'2026-07-09',estado:'Activa',meta:'2 / 4',pdfFail:true,reuniones:[
+    {ini:'08:00',fin:'09:00',part:'María Rodríguez',cargo:'Directora de Inversión · PROCOMER',ofi:'Edificio Central PROCOMER',dir:'Barrio Tournón, San José',idioma:'Inglés',traslado:'30 min → COMEX'},
+    {ini:'09:30',fin:'10:30',part:'Carlos Jiménez',cargo:'Asesor · COMEX',ofi:'COMEX – Escazú',dir:'Plaza Tempo, Escazú',idioma:'Inglés',traslado:null}
+  ]},
+  'A-003':{inversor:'John Smith',empresa:'Acme Robotics',fecha:'2026-07-03',estado:'Anulada',meta:'2 / 3',fechaAnulacion:'05 jul 2026, 14:22',reuniones:[
+    {ini:'08:00',fin:'09:00',part:'María Rodríguez',cargo:'Directora de Inversión · PROCOMER',ofi:'Edificio Central PROCOMER',dir:'Barrio Tournón, San José',idioma:'Inglés',traslado:'35 min → CINDE'},
+    {ini:'09:40',fin:'10:40',part:'Ana Vargas',cargo:'Gerente · CINDE',ofi:'CINDE – Escazú',dir:'Plaza Roble, Escazú',idioma:'Inglés',traslado:null}
+  ]}
+};
+let agendaSel=null;
+const $=id=>document.getElementById(id);
+const toggle=(id,show)=>$(id).classList.toggle('d-none',!show);
+
+/* Consulta con filtros combinables + estado de carga (GET /agendas) */
+function aplicarFiltros(){
+  const inv=$('fInversor').value, fec=$('fFecha').value, est=$('fEstado').value;
+  toggle('agendasError',false); toggle('agendasTabla',false); toggle('emptyAgendas',false); toggle('agendasLoading',true);
+  setTimeout(()=>{
+    toggle('agendasLoading',false); toggle('agendasTabla',true);
+    let vis=0;
+    document.querySelectorAll('#tblAgendas tr').forEach(r=>{
+      const ok=(!inv||r.dataset.inversor===inv)&&(!fec||r.dataset.fecha===fec)&&(!est||r.dataset.estado===est);
+      r.style.display=ok?'':'none'; if(ok)vis++;
+    });
+    toggle('emptyAgendas',vis===0);
+  },650);
+}
+function limpiarFiltros(){ ['fInversor','fFecha','fEstado'].forEach(id=>$(id).value=''); aplicarFiltros(); }
+
+/* Detalle completo de una agenda (GET /agendas/{id}) — CU-05 FA-01 / AC-08 */
+function verDetalle(id){
+  agendaSel=id;
+  new bootstrap.Offcanvas('#detalleAgenda').show();
+  $('detalleTitulo').textContent='Cargando…';
+  $('detalleBody').innerHTML=`<div class="skeleton mb-2" style="height:64px"></div><div class="skeleton mb-2" style="height:90px"></div><div class="skeleton" style="height:90px"></div>`;
+  setTimeout(()=>renderDetalle(id),550);
+}
+function renderDetalle(id){
+  const a=agendas[id];
+  $('detalleTitulo').textContent=`Agenda ${id} · ${a.inversor}`;
+  const badge=a.estado==='Activa'?'text-bg-success-subtle text-success-emphasis':'text-bg-secondary-subtle text-secondary-emphasis';
+  const tl=a.reuniones.map(r=>`
+    <div class="mb-1 position-relative"><span class="timeline-dot"></span>
+      <div class="fw-semibold">${r.ini} – ${r.fin} · ${r.part}</div>
+      <div class="small text-muted">${r.cargo}</div>
+      <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>${r.ofi} — ${r.dir}</div>
+      <div class="small mt-1"><span class="badge text-bg-light lang-chip">Idioma de la reunión: ${r.idioma}</span></div>
+    </div>
+    ${r.traslado?`<div class="small text-muted ms-1 my-2"><i class="bi bi-arrow-down me-1"></i>Traslado ${r.traslado}</div>`:''}`).join('');
+  $('detalleBody').innerHTML=`
+    <div class="d-flex justify-content-between mb-2">
+      <div><div class="small text-muted">Inversor / empresa</div><div class="fw-semibold">${a.inversor}</div><div class="small text-muted">${a.empresa}</div></div>
+      <span class="badge ${badge} align-self-start">${a.estado}</span>
+    </div>
+    <div class="row small mb-3">
+      <div class="col-6"><div class="text-muted">Fecha de jornada</div><div class="fw-semibold">${fmt(a.fecha)}</div></div>
+      <div class="col-6"><div class="text-muted">Reuniones logradas</div><div class="fw-semibold">${a.meta}</div></div>
+    </div>
+    ${a.estado==='Anulada'?`<div class="alert alert-secondary py-2 small"><i class="bi bi-clock-history me-1"></i>Anulada el ${a.fechaAnulacion}. El PDF original sigue disponible (RN-15).</div>`:''}
+    <div class="timeline-line mb-3">${tl}</div>
+    <div class="d-grid gap-2">
+      <button class="btn btn-outline-brand" onclick="descargarPdf('${id}')"><i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF del itinerario</button>
+      ${a.estado==='Activa'?`<button class="btn btn-outline-danger" onclick="abrirAnular('${id}')"><i class="bi bi-x-circle me-1"></i>Anular agenda</button>`:''}
+    </div>`;
+}
+
+/* Descarga de PDF (GET /agendas/{id}/pdf) — CU-06: nombre, disponible aun anulada, error 504 */
+function descargarPdf(id){
+  const a=agendas[id];
+  const fname=`Agenda_${a.fecha}_${a.inversor.replace(/\s+/g,'-')}.pdf`;
+  showToast(`Generando ${fname} (es-CR)…`,'info');
+  setTimeout(()=>{
+    if(a.pdfFail){ showToast('Servicio de PDF no disponible tras 3 reintentos (HTTP 504). Intente nuevamente.','error'); }
+    else{ showToast(`PDF descargado: ${fname}`,'success'); }
+  },1100);
+}
+
+/* Anulación lógica (DELETE /agendas/{id}) — RN-15 soft delete; solo agendas Activa */
+function abrirAnular(id){
+  agendaSel=id; const a=agendas[id];
+  $('anularTexto').innerHTML=`Se anulará la agenda <strong>${id}</strong> de <strong>${a.inversor}</strong> (${fmt(a.fecha)}).`;
+  new bootstrap.Modal('#modalAnular').show();
+}
+function confirmarAnular(){
+  const id=agendaSel, a=agendas[id];
+  if(a.estado!=='Activa'){ showToast('La agenda ya se encuentra anulada (HTTP 409).','error'); return; }
+  const ts=new Date().toLocaleString('es-CR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  a.estado='Anulada'; a.fechaAnulacion=ts;
+  const row=document.querySelector(`#tblAgendas tr[data-id="${id}"]`);
+  row.dataset.estado='Anulada';
+  row.querySelector('.estado-cell').innerHTML='<span class="badge text-bg-secondary-subtle text-secondary-emphasis">Anulada</span>';
+  const btn=row.querySelector('.btn-anular');
+  btn.disabled=true; btn.classList.replace('text-danger','text-muted'); btn.removeAttribute('onclick');
+  btn.title='La agenda ya se encuentra anulada (HTTP 409)';
+  bootstrap.Modal.getInstance($('modalAnular')).hide();
+  showToast(`Agenda ${id} anulada · ${ts}. El PDF sigue disponible (RN-15).`,'success');
+  if($('detalleAgenda').classList.contains('show')) renderDetalle(id);
+}
+
+/* ---- Participante: idiomas + bloques de disponibilidad (Prueba Técnica §4.2) ---- */
+function resetParticipanteForm(){
+  const f=document.getElementById('formParticipante');
+  if(f){ f.reset(); f.classList.remove('was-validated'); }
+  document.getElementById('pIdiomaErr').classList.add('d-none');
+  document.getElementById('bloquesContainer').innerHTML='';
+  agregarBloque();               // arranca con un bloque por defecto
+}
+function bloqueTemplate(){
+  return `<div class="row g-2 align-items-center bloque-row">
+    <div class="col-12 col-md-5"><div class="form-floating"><input type="date" class="form-control b-fecha" required><label>Fecha</label><div class="invalid-feedback">Indique la fecha.</div></div></div>
+    <div class="col-5 col-md-3"><div class="form-floating"><input type="time" class="form-control b-ini" value="08:00" required><label>Inicio</label></div></div>
+    <div class="col-5 col-md-3"><div class="form-floating"><input type="time" class="form-control b-fin" value="12:00" required><label>Fin</label></div></div>
+    <div class="col-2 col-md-1 text-end"><button type="button" class="btn btn-light text-danger min-touch" onclick="eliminarBloque(this)" title="Quitar bloque"><i class="bi bi-x-lg"></i></button></div>
+  </div>`;
+}
+function agregarBloque(){
+  document.getElementById('bloquesContainer').insertAdjacentHTML('beforeend',bloqueTemplate());
+  document.getElementById('bloquesEmpty').classList.add('d-none');
+}
+function eliminarBloque(btn){
+  btn.closest('.bloque-row').remove();
+  const left=document.querySelectorAll('#bloquesContainer .bloque-row').length;
+  document.getElementById('bloquesEmpty').classList.toggle('d-none',left>0);
+}
+function guardarParticipante(e){
+  e.preventDefault();
+  const f=document.getElementById('formParticipante');
+  const idiomas=[...document.querySelectorAll('.p-idioma:checked')].length;
+  document.getElementById('pIdiomaErr').classList.toggle('d-none',idiomas>0);   // RN-04
+  if(!f.checkValidity()||idiomas===0){ f.classList.add('was-validated'); return; }
+  const bloques=document.querySelectorAll('#bloquesContainer .bloque-row').length;
+  bootstrap.Modal.getInstance(document.getElementById('modalParticipante')).hide();
+  showToast(`Participante guardado · ${idiomas} idioma(s) · ${bloques} bloque(s) de disponibilidad.`,'success');
+}
+
+/* ---- Oficina ---- */
+function guardarOficina(e){
+  e.preventDefault();
+  const f=document.getElementById('formOficina');
+  if(!f.checkValidity()){ f.classList.add('was-validated'); return; }
+  bootstrap.Modal.getInstance(document.getElementById('modalOficina')).hide();
+  showToast('Oficina guardada correctamente.','success');
+}
+
+/* ---- Acciones varias ---- */
+</script>
+</body>
+</html>
